@@ -328,6 +328,23 @@
     // Run
     renderTableHeader();
     saveAndRender();
+    // Function to save tasks
+    function saveTasks() {
+    localStorage.setItem('myTasks', JSON.stringify(tasksArray));
+    }
+            // Function to load tasks on page load
+    function loadTasks() {
+    const saved = localStorage.getItem('myTasks');
+    if (saved) {
+        tasksArray = JSON.parse(saved);
+        // Call your function to display tasks on the screen
+        renderTasks(); 
+    }
+    }
+
+    // Run loadTasks when the page finishes loading
+    document.addEventListener('DOMContentLoaded', loadTasks);
+    
   </script>
 </body>
 </html>
