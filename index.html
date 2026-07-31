@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>30-Day Executive Matrix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    .excel-scroll::-webkit-scrollbar { height: 10px; width: 10px; }
+    .excel-scroll::-webkit-scrollbar-track { background: #0f172a; }
+    .excel-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+    .excel-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Glassmorphism subtle background */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Sticky Columns with dark background */
+    .sticky-col-1 { position: sticky; left: 0; z-index: 25; background-color: #1e293b; }
+    .sticky-col-2 { position: sticky; left: 200px; z-index: 25; background-color: #1e293b; }
+    
+    th.sticky-col-1, th.sticky-col-2 {
+      background-color: #0f172a;
+    }
+
+    /* Custom Stylish Checkboxes */
+    .day-checkbox {
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border: 2px solid #334155;
+      border-radius: 6px;
+      background-color: #0f172a;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .day-checkbox:hover {
+      border-color: #10b981;
+      transform: scale(1.08);
+    }
+
+    .day-checkbox:checked {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+
+    .day-checkbox:checked::after {
+      content: '✓';
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased p-4 sm:p-6 lg:p-8">
+
+  <div class="max-w-[1700px] mx-auto space-y-6">
+    
+    <header class="glass-panel p-6 rounded-2xl shadow-2xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+            <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              30-Day Execution Matrix
+            </h1>
+            <p class="text-xs font-medium text-slate-400 mt-0.5">Track daily momentum and build habit consistency.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+        <div class="glass-panel px-4 py-3 rounded-xl text-center border border-slate-800">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Tasks</span>
+          <p id="statTotalTasks" class="text-2xl font-black text-white mt-0.5">0</p>
+        </div>
+        <div class="glass-panel px-4 py-3 rounded-xl text-center border border-slate-800">
+          <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Completed Days</span>
+          <p id="statTotalChecks" class="text-2xl font-black text-emerald-400 mt-0.5">0</p>
+        </div>
+        <div class="glass-panel px-4 py-3 rounded-xl text-center border border-slate-800 col-span-2 sm:col-span-1">
+          <span class="text-[10px] font-bold text-teal-400 uppercase tracking-widest">Avg Completion</span>
+          <p id="statAvgProgress" class="text-2xl font-black text-teal-300 mt-0.5">0%</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="glass-panel p-4 rounded-2xl shadow-lg border border-slate-800">
+      <form id="addTaskForm" class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="taskNameInput" 
+            placeholder="Type a new goal or routine (e.g., Read 30 mins, Cold Outreach)..." 
+            required 
+            class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+          >
+        </div>
+        <select id="taskCategoryInput" class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-300 font-medium focus:outline-none focus:border-emerald-500">
+          <option value="Health">💪 Health</option>
+          <option value="Work">💼 Work</option>
+          <option value="Personal">🔥 Personal</option>
+          <option value="Learning">🧠 Learning</option>
+        </select>
+        <button type="submit" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2">
+          <span>+ Add Goal</span>
+        </button>
+      </form>
+    </div>
+
+    <main class="glass-panel rounded-2xl shadow-2xl border border-slate-800 overflow-hidden">
+      <div class="p-4 border-b border-slate-800/80 bg-slate-900/50 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">30-Day Matrix Board</h2>
+        </div>
+        <button onclick="clearAllData()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition">Clear Sheet</button>
+      </div>
+
+      <div class="overflow-x-auto excel-scroll">
+        <table class="w-full border-collapse text-xs text-left min-w-[1500px]">
+          <thead>
+            <tr id="tableHeader" class="bg-slate-900 text-slate-400 font-bold text-center border-b border-slate-800">
+              <th class="py-4 px-4 sticky-col-1 w-[200px] text-left text-slate-200">Goal / Habit</th>
+              <th class="py-4 px-2 sticky-col-2 w-[110px] text-center text-slate-200">Category</th>
+              <th class="py-4 px-4 min-w-[180px] text-left text-slate-200">30-Day Progress</th>
+              <th class="py-4 px-2 w-[60px]">Action</th>
+            </tr>
+          </thead>
+          <tbody id="matrixTableBody" class="divide-y divide-slate-800/60">
+            </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    // Initial Seed Data
+    const defaultTasks = [
+      { id: 'TSK-101', name: 'Morning Gym Session', category: 'Health', days: Array(30).fill(false) },
+      { id: 'TSK-102', name: 'Deep Work (2 Hours)', category: 'Work', days: Array(30).fill(false) }
+    ];
+
+    let tasks = JSON.parse(localStorage.getItem('30_day_executive_tasks')) || defaultTasks;
+
+    // Render Table Header (Day 1 through Day 30)
+    function renderTableHeader() {
+      const headerRow = document.getElementById('tableHeader');
+      const progressHeader = headerRow.children[headerRow.children.length - 2];
+
+      for (let i = 1; i <= 30; i++) {
+        const th = document.createElement('th');
+        th.className = 'py-4 px-1 w-[42px] text-center font-bold border-r border-slate-800/50 text-slate-400';
+        th.textContent = `${i}`;
+        headerRow.insertBefore(th, progressHeader);
+      }
+    }
+
+    // Save and Sync Data
+    function saveAndRender() {
+      localStorage.setItem('30_day_executive_tasks', JSON.stringify(tasks));
+      renderMatrixTable();
+      updateDashboardStats();
+    }
+
+    // Badge styling logic
+    function getCategoryBadge(cat) {
+      const styles = {
+        'Health': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        'Work': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+        'Personal': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+        'Learning': 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+      };
+      return styles[cat] || 'bg-slate-800 text-slate-300 border-slate-700';
+    }
+
+    // Render Rows
+    function renderMatrixTable() {
+      const tbody = document.getElementById('matrixTableBody');
+      tbody.innerHTML = '';
+
+      if (tasks.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="34" class="py-12 text-center text-slate-500 font-medium text-sm">
+              Your tracking matrix is empty. Add a goal above to start building your 30-day streak!
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tasks.forEach((task, taskIdx) => {
+        const completedDays = task.days.filter(Boolean).length;
+        const progressPercent = Math.round((completedDays / 30) * 100);
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition-colors group border-b border-slate-800/40';
+
+        // Sticky Task & Category columns
+        let rowHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-200 sticky-col-1 border-r border-slate-800/80 truncate max-w-[200px]" title="${task.name}">
+            ${task.name}
+          </td>
+          <td class="py-3 px-2 text-center sticky-col-2 border-r border-slate-800/80">
+            <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg border ${getCategoryBadge(task.category)}">${task.category}</span>
+          </td>
+        `;
+
+        // 30 Custom Checkbox Cells
+        task.days.forEach((isChecked, dayIdx) => {
+          rowHTML += `
+            <td class="py-3 px-1 text-center border-r border-slate-800/40">
+              <input 
+                type="checkbox" 
+                ${isChecked ? 'checked' : ''} 
+                onchange="toggleDay(${taskIdx}, ${dayIdx})"
+                class="day-checkbox"
+              >
+            </td>
+          `;
+        });
+
+        // Progress Bar
+        rowHTML += `
+          <td class="py-3 px-4 border-r border-slate-800/80">
+            <div class="flex items-center gap-3">
+              <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: ${progressPercent}%"></div>
+              </div>
+              <span class="text-xs font-extrabold text-slate-300 w-9 text-right">${progressPercent}%</span>
+            </div>
+          </td>
+          <td class="py-3 px-2 text-center">
+            <button onclick="deleteTask(${taskIdx})" class="text-slate-600 hover:text-rose-400 transition font-bold text-base px-2">✕</button>
+          </td>
+        `;
+
+        tr.innerHTML = rowHTML;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleDay(taskIdx, dayIdx) {
+      tasks[taskIdx].days[dayIdx] = !tasks[taskIdx].days[dayIdx];
+      saveAndRender();
+    }
+
+    document.getElementById('addTaskForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('taskNameInput');
+      const categoryInput = document.getElementById('taskCategoryInput');
+
+      tasks.push({
+        id: `TSK-${Date.now().toString().slice(-4)}`,
+        name: nameInput.value.trim(),
+        category: categoryInput.value,
+        days: Array(30).fill(false)
+      });
+
+      nameInput.value = '';
+      saveAndRender();
+    });
+
+    function deleteTask(taskIdx) {
+      tasks.splice(taskIdx, 1);
+      saveAndRender();
+    }
+
+    function clearAllData() {
+      if (confirm('Are you sure you want to clear all tasks from the sheet?')) {
+        tasks = [];
+        saveAndRender();
+      }
+    }
+
+    function updateDashboardStats() {
+      document.getElementById('statTotalTasks').textContent = tasks.length;
+      
+      const totalChecks = tasks.reduce((sum, t) => sum + t.days.filter(Boolean).length, 0);
+      document.getElementById('statTotalChecks').textContent = totalChecks;
+
+      if (tasks.length === 0) {
+        document.getElementById('statAvgProgress').textContent = '0%';
+        return;
+      }
+
+      const maxPossible = tasks.length * 30;
+      const avg = Math.round((totalChecks / maxPossible) * 100);
+      document.getElementById('statAvgProgress').textContent = `${avg}%`;
+    }
+
+    // Run
+    renderTableHeader();
+    saveAndRender();
+  </script>
+</body>
+</html>
